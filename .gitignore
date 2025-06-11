@@ -177,3 +177,5 @@ wandb
 traj/
 videos/
 models
+model2
+commands

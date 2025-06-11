@@ -1,5 +1,5 @@
 """
-Final Multi-Agent PPO Implementation for Social RL Take-home Interview
+ulti-Agent PPO Implementation for Social RL Take-home Interview
 
 Features:
 - Independent PPO (IPPO) with multiple agents

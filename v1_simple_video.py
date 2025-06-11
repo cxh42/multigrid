@@ -7,7 +7,7 @@ import torch
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-from final_multiagent_ppo import MultiAgentPPOController
+from v1_multiagent_ppo import MultiAgentPPOController
 from envs import gym_multigrid
 from envs.gym_multigrid import multigrid_envs
 
