@@ -244,7 +244,7 @@ class SimpleController:
             
             # Count goal touches
             for r in shaped_rewards:
-                if r >= 9.5:
+                if r >= 4.5:
                     goal_touches += 1
             
             # Store trajectories
