@@ -177,5 +177,5 @@ wandb
 traj/
 videos/
 models
-model8
-commands
+models8
+trajectory_frames/
