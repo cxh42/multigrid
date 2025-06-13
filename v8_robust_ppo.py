@@ -33,7 +33,6 @@ except ImportError:
 
 
 class SimplePPOAgent(nn.Module):
-    """Minimalist PPO Network"""
     
     def __init__(self, n_actions=7):
         super().__init__()
@@ -239,7 +238,7 @@ class SimpleController:
             actions, log_probs, values = self.get_actions(obs)
             next_obs, rewards, done, info = self.env.step(actions)
             
-            # v7 style reward shaping
+            # reward shaping
             agent_positions = [self.env.agent_pos[i] for i in range(self.n_agents)]
             shaped_rewards = self.shape_rewards(agent_positions, rewards, actions)
             
