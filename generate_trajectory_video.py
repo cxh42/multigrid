@@ -1,5 +1,5 @@
 """
-生成轨迹视频帧脚本 - 基于v8训练模型
+Trajectory video frame generation script - Based on v8 trained model
 """
 
 import gym
@@ -17,7 +17,7 @@ from envs.gym_multigrid import multigrid_envs
 
 
 class SimplePPOAgent(nn.Module):
-    """与v8相同的网络结构"""
+    """Same network structure as v8"""
     
     def __init__(self, n_actions=7):
         super().__init__()
@@ -82,17 +82,17 @@ class SimplePPOAgent(nn.Module):
 
 
 class VideoGenerator:
-    """视频帧生成器"""
+    """Video frame generator"""
     
     def __init__(self, model_path_prefix, env_name="MultiGrid-Cluttered-Fixed-15x15"):
         self.env_name = env_name
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
-        # 创建环境
+        # Create environment
         self.env = gym.make(env_name)
         self.n_agents = self.env.n_agents
         
-        # 加载模型
+        # Load models
         self.agents = []
         for i in range(self.n_agents):
             agent = SimplePPOAgent().to(self.device)
@@ -100,16 +100,16 @@ class VideoGenerator:
             agent.eval()
             self.agents.append(agent)
         
-        # 动作名称映射
+        # Action name mapping
         self.action_names = {
             0: "left", 1: "right", 2: "forward", 
             3: "pickup", 4: "drop", 5: "toggle", 6: "done"
         }
         
-        print(f"加载完成: {self.n_agents}个智能体, 环境: {env_name}")
+        print(f"Loading completed: {self.n_agents} agents, environment: {env_name}")
     
     def get_actions(self, obs):
-        """获取动作"""
+        """Get actions"""
         actions = []
         
         for i in range(self.n_agents):
@@ -126,7 +126,7 @@ class VideoGenerator:
         return actions
     
     def get_goal_position(self):
-        """获取目标位置"""
+        """Get goal position"""
         try:
             for i in range(self.env.width):
                 for j in range(self.env.height):
@@ -138,7 +138,7 @@ class VideoGenerator:
             return np.array([13, 13])
     
     def shape_rewards(self, agent_positions, original_rewards, actions):
-        """v8风格的奖励塑形"""
+        """v8 style reward shaping"""
         shaped_rewards = []
         goal_pos = self.get_goal_position()
         
@@ -146,27 +146,27 @@ class VideoGenerator:
             pos = np.array(agent_positions[i])
             action = actions[i]
             
-            # 触碰目标 - 大奖励
+            # Touch goal - big reward
             if original_rewards[i] > 0:
                 shaped_rewards.append(5.0)
                 continue
             
             reward = 0.0
             
-            # 距离奖励
+            # Distance reward
             current_dist = np.linalg.norm(pos - goal_pos)
             if hasattr(self, 'prev_distances') and self.prev_distances[i] is not None:
                 dist_change = self.prev_distances[i] - current_dist
                 reward += dist_change * 0.2
             
-            # 移动奖励
+            # Movement reward
             if hasattr(self, 'prev_positions') and self.prev_positions[i] is not None:
                 if not np.array_equal(pos, self.prev_positions[i]):
                     reward += 0.02
                 else:
                     reward -= 0.02
             
-            # 行动奖励
+            # Action reward
             if action == 2:  # forward
                 reward += 0.02
             elif action in [0, 1]:  # turn
@@ -178,41 +178,41 @@ class VideoGenerator:
         return shaped_rewards
     
     def generate_trajectory(self, max_steps=100):
-        """生成轨迹数据"""
+        """Generate trajectory data"""
         obs = self.env.reset()
         
-        # 初始化记录
+        # Initialize records
         trajectory_data = []
         episode_rewards = [0] * self.n_agents
         collective_rewards = [0]
         
-        # 初始化奖励塑形状态
+        # Initialize reward shaping state
         self.prev_distances = [None] * self.n_agents
         self.prev_positions = [None] * self.n_agents
         
         for step in range(max_steps):
-            # 获取动作
+            # Get actions
             actions = self.get_actions(obs)
             
-            # 执行动作
+            # Execute actions
             next_obs, original_rewards, done, info = self.env.step(actions)
             
-            # 计算塑形奖励
+            # Calculate shaped rewards
             agent_positions = [self.env.agent_pos[i] for i in range(self.n_agents)]
             shaped_rewards = self.shape_rewards(agent_positions, original_rewards, actions)
             
-            # 更新累积奖励
+            # Update cumulative rewards
             for i in range(self.n_agents):
                 episode_rewards[i] += shaped_rewards[i]
             collective_rewards.append(sum(episode_rewards))
             
-            # 获取智能体局部观察图像
+            # Get agent partial observation images
             agents_partial_images = []
             for i in range(self.n_agents):
                 partial_img = self.env.get_obs_render(obs['image'][i])
                 agents_partial_images.append(partial_img)
             
-            # 记录当前帧数据
+            # Record current frame data
             frame_data = {
                 'step': step,
                 'full_image': self.env.render('rgb_array'),
@@ -225,10 +225,10 @@ class VideoGenerator:
             }
             trajectory_data.append(frame_data)
             
-            # 更新状态
+            # Update state
             obs = next_obs
             
-            # 更新奖励塑形状态
+            # Update reward shaping state
             goal_pos = self.get_goal_position()
             for i in range(self.n_agents):
                 pos = np.array(agent_positions[i])
@@ -241,7 +241,7 @@ class VideoGenerator:
         return trajectory_data
     
     def plot_frame(self, frame_data, output_path):
-        """绘制单帧图像"""
+        """Plot single frame image"""
         sns.set_style("whitegrid")
         fig = plt.figure(figsize=(15, 10))
         gs = gridspec.GridSpec(3, 2+self.n_agents, figure=fig, hspace=0.3, wspace=0.3)
@@ -254,20 +254,20 @@ class VideoGenerator:
         episode_rewards = frame_data['episode_rewards']
         collective_rewards = frame_data['collective_rewards']
         
-        # 1. 完整环境状态 (左上角 2x2)
+        # 1. Full environment state (top left 2x2)
         ax_full = fig.add_subplot(gs[:2, :2])
         ax_full.imshow(full_image)
         ax_full.set_title('Full Environment State', fontsize=14, fontweight='bold')
         ax_full.axis('off')
         
-        # 2. 智能体局部观察 (右上角)
+        # 2. Agent partial observations (top right)
         for i in range(self.n_agents):
             ax_partial = fig.add_subplot(gs[0, 2+i])
             ax_partial.imshow(agents_partial_images[i])
             ax_partial.set_title(f'Agent{i} Partial Obs', fontsize=10)
             ax_partial.axis('off')
         
-        # 3. 集体累积奖励 (左下角)
+        # 3. Collective cumulative reward (bottom left)
         ax_collective = fig.add_subplot(gs[2, :2])
         steps = list(range(len(collective_rewards)))
         ax_collective.plot(steps, collective_rewards, 'b-', linewidth=2)
@@ -278,16 +278,16 @@ class VideoGenerator:
         ax_collective.set_ylabel('Collective Return')
         ax_collective.grid(True, alpha=0.3)
         
-        # 4. 各智能体累积奖励和动作信息 (右下角)
+        # 4. Individual agent cumulative rewards and action information (bottom right)
         for i in range(self.n_agents):
             ax_agent = fig.add_subplot(gs[1, 2+i])
             
-            # 绘制累积奖励曲线
+            # Plot cumulative reward curve
             agent_cumulative = [0]
             cumsum = 0
             for j in range(step+1):
                 if j < len(collective_rewards)-1:
-                    # 这里简化处理，假设平均分配
+                    # Simplified handling here, assuming equal distribution
                     cumsum += collective_rewards[j+1] - collective_rewards[j]
                 agent_cumulative.append(cumsum / self.n_agents)
             
@@ -300,74 +300,74 @@ class VideoGenerator:
             ax_agent.set_ylabel('Return')
             ax_agent.grid(True, alpha=0.3)
             
-            # 添加动作和奖励文本信息
+            # Add action and reward text information
             action_name = self.action_names.get(actions[i], f"action_{actions[i]}")
             reward_text = f"a^{i}_t={step}: {action_name}\nR_t={step}: {shaped_rewards[i]:.3f}"
             
-            # 在图的右下角添加文本
+            # Add text to the bottom right corner of the plot
             ax_agent.text(0.98, 0.02, reward_text, transform=ax_agent.transAxes,
                          fontsize=8, verticalalignment='bottom', horizontalalignment='right',
                          bbox=dict(boxstyle='round,pad=0.3', facecolor='lightblue', alpha=0.7))
         
-        # 添加整体标题
+        # Add overall title
         fig.suptitle(f'Multi-Agent Trajectory - Step {step}', fontsize=16, fontweight='bold')
         
-        # 保存图像
+        # Save image
         plt.savefig(output_path, dpi=150, bbox_inches='tight')
         plt.close()
     
     def generate_video_frames(self, model_path_prefix, output_dir="trajectory_frames", max_steps=100):
-        """生成视频帧"""
-        # 创建输出目录
+        """Generate video frames"""
+        # Create output directory
         os.makedirs(output_dir, exist_ok=True)
         
-        print(f"生成轨迹数据...")
+        print(f"Generating trajectory data...")
         trajectory_data = self.generate_trajectory(max_steps)
         
-        print(f"生成 {len(trajectory_data)} 帧图像...")
+        print(f"Generating {len(trajectory_data)} frame images...")
         for i, frame_data in enumerate(trajectory_data):
             output_path = os.path.join(output_dir, f"frame_{i:05d}.png")
             self.plot_frame(frame_data, output_path)
             
             if i % 10 == 0:
-                print(f"已生成 {i+1}/{len(trajectory_data)} 帧")
+                print(f"Generated {i+1}/{len(trajectory_data)} frames")
         
-        print(f"完成! 图像保存在: {output_dir}")
+        print(f"Complete! Images saved in: {output_dir}")
         return len(trajectory_data)
 
 
 def main():
-    """主函数"""
+    """Main function"""
     import argparse
     
-    parser = argparse.ArgumentParser(description="生成轨迹视频帧")
+    parser = argparse.ArgumentParser(description="Generate trajectory video frames")
     parser.add_argument("--model-path", type=str, required=True, 
-                       help="模型路径前缀，例如: models8/best_performance")
+                       help="Model path prefix, e.g.: models8/best_performance")
     parser.add_argument("--env", type=str, default="MultiGrid-Cluttered-Fixed-15x15",
-                       help="环境名称")
+                       help="Environment name")
     parser.add_argument("--output-dir", type=str, default="trajectory_frames",
-                       help="输出目录")
+                       help="Output directory")
     parser.add_argument("--max-steps", type=int, default=100,
-                       help="最大步数")
+                       help="Maximum steps")
     
     args = parser.parse_args()
     
-    # 创建视频生成器
+    # Create video generator
     generator = VideoGenerator(args.model_path, args.env)
     
-    # 生成帧
+    # Generate frames
     num_frames = generator.generate_video_frames(
         args.model_path, 
         args.output_dir, 
         args.max_steps
     )
     
-    print(f"\n生成完成!")
-    print(f"总帧数: {num_frames}")
-    print(f"输出目录: {args.output_dir}")
+    print(f"\nGeneration complete!")
+    print(f"Total frames: {num_frames}")
+    print(f"Output directory: {args.output_dir}")
     
-    # 生成视频的命令提示
-    print(f"\n生成视频命令:")
+    # Video generation command prompt
+    print(f"\nVideo generation command:")
     print(f"ffmpeg -r 10 -i {args.output_dir}/frame_%05d.png -c:v libx264 -pix_fmt yuv420p trajectory_video.mp4")
 
 
