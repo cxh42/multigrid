@@ -2,7 +2,10 @@
 
 Multi-agent Reinforcement Learning implementation based on the [MultiGrid](https://github.com/maximecb/gym-minigrid) framework.
 
-[Multi-Agent Demo](v8_trajectory_video.gif)
+<div align="center">
+  <img src="v8_trajectory_video.gif" alt="Multi-Agent Demo" width="600">
+  <p><em>Multi-agent cooperation in MultiGrid environment</em></p>
+</div>
 
 ## 🚀 Key Features
 
