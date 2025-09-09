@@ -1,6 +1,8 @@
 # Multi-Agent PPO for MultiGrid Environments
 
-Enhanced multi-agent reinforcement learning implementation based on the [MultiGrid](https://github.com/maximecb/gym-minigrid) framework.
+Multi-agent Reinforcement Learning implementation based on the [MultiGrid](https://github.com/maximecb/gym-minigrid) framework.
+
+[Multi-Agent Demo](v8_trajectory_video.gif)
 
 ## 🚀 Key Features
 
