@@ -1,34 +1,30 @@
-# Multi-agent Minimalistic Gridworld Environment (MultiGrid)
+# Multi-Agent PPO for MultiGrid Environments
 
-This repo inherits and extends
-[MiniGrid](https://github.com/maximecb/gym-minigrid), a simple, lightweight, and
-fast gridworld environment based on the OpenAI gym API. In this version,
-multiple agents can act in the environment simultaneously. Each agent has their
-own partially observable view of the world. Agents may compete for resources
-with each other. MultiGrid is backwards compatible with MiniGrid and can also
-handle single-agent training.
+Enhanced multi-agent reinforcement learning implementation based on the [MultiGrid](https://github.com/maximecb/gym-minigrid) framework.
 
-## Changes from MiniGrid
+## 🚀 Key Features
 
-Unlike MiniGrid, the MultiGrid environment is stepped by passing in an array of
-actions, one for each agent. It then returns an array of observations, each in
-the form of a dict (as in MiniGrid). It also returns an array of rewards.
+- **Smart Reward Shaping**: Goal-oriented reward functions for sparse reward environments  
+- **Behavior Monitoring**: Real-time agent activity analysis and adaptive training
+- **Trajectory Visualization**: Comprehensive video generation with environment and agent states
 
-For more information about the observations, the environment API, and the types
-of worlds available, please consult the
-[MiniGrid](https://github.com/maximecb/gym-minigrid) documentation.
+## 🛠️ Quick Start
 
-## Basic Usage
-
-There is a text-based UI application which allows you to manually control each
-agent to test the environment functionality:
-
-```
-python -m manual_control_multiagent.py
+### Installation
+```bash
+pip install -r requirements.txt
 ```
 
-The environment being run can be selected with the `--env_name` option, eg:
+### Training
+```bash
+# Recommended stable version
+python v8_robust_ppo.py --env MultiGrid-Cluttered-Fixed-15x15 --episodes 100000
 
+# With WandB logging
+python v8_robust_ppo.py --project your-project --name experiment-1
 ```
-python -m manual_control_multiagent.py --env_name MultiGrid-DoorKey-16x16-v0
+
+### Generate Videos
+```bash
+python generate_trajectory_video.py --model-path models8/best_performance --env MultiGrid-Cluttered-Fixed-15x15
 ```
