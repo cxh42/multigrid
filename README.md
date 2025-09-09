@@ -9,7 +9,7 @@ Multi-agent Reinforcement Learning implementation based on the [MultiGrid](https
 
 ## 🚀 Key Features
 
-- **Smart Reward Shaping**: Goal-oriented reward functions for sparse reward environments  
+- **Reward Shaping**: Goal-oriented reward functions for sparse reward environments  
 - **Trajectory Visualization**: Comprehensive video generation with environment and agent states
 
 ## 🛠️ Quick Start
